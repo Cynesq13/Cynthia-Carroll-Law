@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carroll Law – Staff FAQ Assistant</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background: #1a3a5c;
+    color: white;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header .logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  header .tagline {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+  .badge {
+    margin-left: auto;
+    background: #c9a84c;
+    color: #1a1a1a;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 820px;
+    width: 100%;
+    margin: 28px auto;
+    padding: 0 16px 16px;
+    gap: 0;
+  }
+  .intro-card {
+    background: white;
+    border-radius: 12px 12px 0 0;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e8ecf0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .intro-card h2 {
+    font-size: 15px;
+    color: #1a3a5c;
+    margin-bottom: 6px;
+  }
+  .intro-card p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .suggestion-btn {
+    background: #eef2f8;
+    border: 1px solid #c8d4e8;
+    color: #1a3a5c;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .suggestion-btn:hover {
+    background: #1a3a5c;
+    color: white;
+    border-color: #1a3a5c;
+  }
+  .messages {
+    background: white;
+    flex: 1;
+    min-height: 340px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .msg {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .msg.user { flex-direction: row-reverse; }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .msg.user .avatar { background: #c9a84c; color: white; }
+  .msg.bot .avatar { background: #1a3a5c; color: white; }
+  .bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .msg.user .bubble {
+    background: #1a3a5c;
+    color: white;
+    border-top-right-radius: 3px;
+  }
+  .msg.bot .bubble {
+    background: #f0f3f8;
+    color: #222;
+    border-top-left-radius: 3px;
+  }
+  .bubble a { color: #1a3a5c; }
+  .msg.user .bubble a { color: #c9a84c; }
+  .bubble .escalate-note {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #fff8e6;
+    border-left: 3px solid #c9a84c;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #7a5500;
+  }
+  .typing {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .typing span {
+    width: 7px; height: 7px;
+    background: #1a3a5c;
+    border-radius: 50%;
+    animation: bounce 1s infinite;
+    opacity: 0.6;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+  .input-area {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    padding: 14px 24px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #e8ecf0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  #userInput {
+    flex: 1;
+    border: 1.5px solid #d0d8e4;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    color: #222;
+    transition: border-color 0.2s;
+    min-height: 42px;
+    max-height: 120px;
+  }
+  #userInput:focus { border-color: #1a3a5c; }
+  #sendBtn {
+    background: #1a3a5c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  #sendBtn:hover { background: #244f7a; }
+  #sendBtn:disabled { background: #aab; cursor: not-allowed; }
+  .disclaimer {
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    margin-top: 10px;
+    padding: 0 16px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">⚖ Cynthia L. Carroll, P.A.</div>
+    <div class="tagline">Internal Staff FAQ Assistant</div>
+  </div>
+  <div class="badge">INTERNAL USE ONLY</div>
+</header>
+
+<div class="chat-container">
+  <div class="intro-card">
+    <h2>Ask a question about any client situation.</h2>
+    <p>This assistant knows all 89 firm FAQs. Type your question in plain language and get an immediate answer. If a situation is not covered by the FAQs, you will be told to escalate to Ms. Carroll.</p>
+    <div style="margin-top:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <label style="font-size:12px; color:#555; font-weight:600; white-space:nowrap;">🔑 API Key:</label>
+      <input id="apiKeyInput" type="password" placeholder="Paste your Anthropic API key here (sk-ant-...)" style="flex:1; min-width:220px; border:1.5px solid #d0d8e4; border-radius:6px; padding:7px 12px; font-size:12.5px; outline:none; font-family:inherit; color:#222;" />
+      <span style="font-size:11px; color:#999;">Stored only in this tab — never saved</span>
+    </div>
+    <div class="suggestions">
+      <button class="suggestion-btn" onclick="ask('Client wants to pay off their Chapter 13 early. What do I tell them?')">Pay off Ch. 13 early?</button>
+      <button class="suggestion-btn" onclick="ask('Creditor is still calling client after bankruptcy was filed')">Creditor calling after filing</button>
+      <button class="suggestion-btn" onclick="ask('Client wants to buy a car while in Chapter 13')">Buy car in Ch. 13</button>
+      <button class="suggestion-btn" onclick="ask('Client received Notice of Abandonment and is worried')">Notice of Abandonment</button>
+      <button class="suggestion-btn" onclick="ask('Can client convert Chapter 13 to Chapter 7?')">Convert 13 to 7?</button>
+      <button class="suggestion-btn" onclick="ask('Client totaled their car in Chapter 13. What happens?')">Totaled car in Ch. 13</button>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="msg bot">
+      <div class="avatar">CC</div>
+      <div class="bubble">Hello! I'm your firm FAQ assistant. Ask me any question about a client situation and I'll guide you using the firm's established procedures. If something falls outside the FAQs, I'll let you know to bring it to Ms. Carroll directly.</div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Type your question here… (e.g. 'Client is being evicted and we haven't filed yet')" rows="1" onkeydown="handleKey(event)"></textarea>
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+<div class="disclaimer">For internal paralegal and intake staff use only · Cynthia L. Carroll, P.A. · Not legal advice to clients</div>
+
+<script>
+const FAQ_CONTENT = `
+FAQ 1 – UTILITY ACCOUNTS IN BANKRUPTCY
+Once utility companies receive notice of a bankruptcy filing, they split the account into pre-petition (discharged) and post-petition (not discharged, used for ongoing billing). They may charge a deposit based on prior usage. EXCEPTION: City of Wilmington utility accounts where the Debtor is a homeowner — this is secured debt and NOT dischargeable. Advise clients to remain current on ALL utility bills going forward.
+
+FAQ 2 – NOTICE OF ABANDONMENT OF PROPERTY (CHAPTER 7)
+This is GOOD NEWS. It means the client gets to keep their house, car, and/or assets. The Trustee agrees the assets are exempt and there is nothing to sell to pay creditors. Send the standard email template to the client reassuring them. Do NOT alarm the client.
+
+FAQ 3 – TRUSTEE'S REPORT OF NO DISTRIBUTION
+See samples in Dropbox. This is also generally positive news for the client.
+
+FAQ 4 – PAYING OFF CHAPTER 13 EARLY
+It depends on median income status:
+- Under-median at filing, OR over-median but MORE than 60 months in bankruptcy: Send Yesware email "Trade In Car or Pay Off Chapter 13"
+- Over-median at filing AND fewer than 60 months in: Send Yesware email "Over-Median and Impact on Plan"
+Always check Form 122C-1, upper right corner to determine commitment period (3 years = under-median, 5 years = over-median).
+
+FAQ 5 – "MY HOUSE WAS NOT SUPPOSED TO BE IN MY BANKRUPTCY"
+All debt must be listed. Mortgages are secured debt — to keep the house, the client must keep making payments. The bankruptcy discharges unsecured debt (credit cards, personal loans, hospital bills). Also reassure about any Notice of Abandonment received (see FAQ 2).
+
+FAQ 6 – REAFFIRMATION AGREEMENT ORDER — "NOT ENFORCEABLE PER STATUTE" 11 U.S.C. § 524(c)(3)
+The agreement is not enforceable. No hearing is necessary. Escalate to Ms. Carroll for specific guidance if client has questions about implications.
+
+FAQ 7 – HOW MUCH HAS BEEN PAID TOWARD A VEHICLE THROUGH THE CHAPTER 13 PLAN
+Step 1: Get the most recent plan filed via Jubilee. Step 2: Obtain the Access13 Report. Videos and instructions available via Dropbox and Loom.
+
+FAQ 8 – OPTIONS FOR REPLACING A CAR IN CHAPTER 13
+Options include: (1) Surrender current car and replace — plan payment continues PLUS new car payment; email Judy@ch13de.com for trustee permission letter. Guidelines: max $350-400/month, 18% interest, 60 months max. (2) Convert to Chapter 7 and redeem car (look up value at nada.com; redemption loan available through 722 Redemption; conversion fee $475, need 6 months income proof + 3 years tax returns + updated budget). (3) Convert to Chapter 7 then replace car. NOTE: Chapter 7 debtors can get a replacement vehicle anytime AFTER filing, not before. See Yesware template "Automobiles During and After Bankruptcy."
+
+FAQ 8.5 – WHEN DOES CLIENT RECEIVE DISCHARGE?
+Chapter 7: 90 days after 341 hearing, provided debtor education course is complete.
+Chapter 13: ~60 days after Trustee files Interim Report, which occurs after client files Form 104. After making last plan payment + debtor education course, send client the appropriate Form 104 (one version for those current on mortgage, different version for those behind). After Form 104 filed → Trustee files Interim Report → 30-day notice → Trustee files Notice of Consummation → another 30-day notice → discharge entered ~1 week later. If client is behind on mortgage and can't catch up, notify Ms. Carroll — a stipulation may be needed for a limited discharge.
+
+FAQ 9 – SHOULD CLIENT STOP PAYING CREDIT CARDS?
+(1) If planning to file bankruptcy: stop using credit cards immediately. No cash advances, payday loans, or line-of-credit draws. (2) If $500 or more was charged to any one creditor within last 90 days for non-necessities: stop using that card and pay minimums only. (3) If unsecured, non-joint debt not used in last 90 days: client may continue paying if they choose.
+
+FAQ 10 – CONVERTING CHAPTER 13 TO CHAPTER 7 (CHECKLIST)
+Need: 6 months paystubs, 3 years federal tax returns. Check: Was Ch. 13 plan confirmed? Cars or taxes in the plan? Was debtor over-median when filed (Form 122A)? Is debtor now under-median? If surrendering home, get rent estimate. Compare Schedule I/J net income to recent paystubs. Check Access13 last page for Trustee payoff including priority/secured debt. Prior Chapter 7 within 8 years? If no bars exist and income is now under-median, debtor likely qualifies. Additional fees apply (difference between Ch. 13 and current fees). Car options: surrender, pay off, reinstate loan, or redemption. Email template in Yesware: "Chapter 13-7 Conversion Inquiry."
+
+FAQ 11 – CAN CLIENT PAY OFF CHAPTER 13 AND GET OUT?
+Yes, if: (A) Under-median (Form 122C-1 shows 3-year commitment period) AND (B) 3+ years since filing. If yes to both: get Access13 balance, send payoff to Trustee, have client take debtor education course, complete Form 104. If over-median (5-year commitment period): must wait 60 months. Consider plan modification or Chapter 7 conversion if income has dropped.
+
+FAQ 12 – TAXES DISCHARGEABLE IN BANKRUPTCY?
+Three rules must ALL be met: (1) Tax return must have been DUE at least 3 years before bankruptcy filing. (2) Tax return must have been FILED BY THE DEBTOR (not the IRS) at least 2 years before filing. (3) Must be federal or state personal/business INCOME taxes (not payroll taxes). If all three rules met, debt MAY be discharged as unsecured non-priority — UNLESS a federal tax lien has been filed.
+
+FAQ 13 – CLIENT'S CAR TOTALED IN AN ACCIDENT
+If car totaled: see Loom video for car handling. If client expects a personal injury settlement: see Loom video for how accident lawsuits are handled in bankruptcy. If accident was DEBTOR'S FAULT (no DUI): list all potential claimants on Schedule F. The bankruptcy discharge will cover any remaining vehicle debt. Send client auto lender resources (Ashe Auto, Conicelli Honda, etc.).
+
+FAQ 14 – RESTITUTION IN BANKRUPTCY
+Restitution is NOT dischargeable in bankruptcy. It may be paid through a Chapter 13 plan and does not accrue interest. This is covered in the client handout given at the start of the case.
+
+FAQ 15 – EVICTIONS
+Bankruptcy filing WILL stay an eviction IF filed BEFORE the JP Court hearing. If client wants to stay in rental with income: Chapter 13. If client just wants to discharge rental arrears (pre-petition): Chapter 7. To add rental debt to a pending case: file Notice to Add Creditor (Post-Petition Paralegal responsible). If Chapter 7 client needs to convert to Chapter 13: Motions Paralegal files Motion to Convert; client must put rent in savings immediately. If eviction already ORDERED by JP Court: bankruptcy cannot stop it — can only discharge the debt. File Suggestion of Bankruptcy with JP Court if eviction lawsuit is pending. Chapter 13 with back rent owed: add the arrears to the Chapter 13 plan.
+
+FAQ 16 – CAN LANDLORD EVICT WITHOUT COURT?
+Yes — if lease expires or landlord chooses not to renew. If tenant stays past lease terms, they are a "holdover" and liable for TREBLE damages (3x the rent).
+
+FAQ 17 – CREDITOR CALLS BEFORE BANKRUPTCY IS FILED
+If client has retained the firm (payment made, fee agreement signed, file in Clio): Tell client to instruct creditors to call (302) 733-0411. Client's direct office number: (302) 335-7521. Once client tells creditor they are represented and to stop calling, creditor must stop.
+
+FAQ 17.5 – CREDITOR CONTACT/LAWSUITS AFTER CASE FILED
+IMMEDIATELY forward ALL creditor communications to the Bankruptcy Paralegal responsible for post-petition issues. Do NOT respond directly. Do NOT discard anything.
+BEFORE DISCHARGE (case pending): Confirm case filed and automatic stay is in effect (§ 362). Confirm creditor received notice. Send Stay Letter with copy of 341 Notice + BNC Notice + §362 citation. If lawsuit filed while case pending: file Suggestion of Bankruptcy in appropriate Delaware court (JP, CCP, or Superior Court).
+AFTER DISCHARGE: Same steps plus add Discharge Order. Send Discharge Injunction Letter (§ 524(a)(2)) or email friendly opposing counsel (Yesware template). If lawsuit filed post-discharge: file Suggestion of Bankruptcy citing §524(a)(2); consider contempt motion.
+CRITICAL: Unlisted creditors are NOT discharged in Chapter 13. In a no-asset Chapter 7, unlisted general unsecured creditors ARE generally still discharged (Judd v. Wolfe).
+
+FAQ 18 – WILL CLIENT LOSE CAR OR HOUSE IN BANKRUPTCY?
+No, as long as they are current on car and mortgage payments — whether Chapter 7 or Chapter 13. If behind on car or mortgage: Chapter 13 is typically the better option.
+
+FAQ 19 – SELLING HOUSE IN CHAPTER 13
+Yes, client may sell. Send client the handout "Sale of Property in Chapter 13 Bankruptcy" (Yesware template library).
+
+FAQ 20 – MAY CLIENT KEEP PROCEEDS FROM HOUSE SALE IN CHAPTER 13?
+Client keeps: (A) Exempt amount — look at original Schedule C, "Amount of exemption claimed" for the house. (B) Any value accrued since filing — if sales price exceeds the "Current value of entire property" on Form 106C, client keeps the excess too.
+
+FAQ 21 – CAN CLIENT PAY OFF BANKRUPTCY BY SELLING HOUSE?
+(A) Have they been in Chapter 13 at least 36 months? If NO: cannot pay off with house sale; must stay in 36 months minimum; modify plan to lower payments after sale. If YES: (B) Was income below Delaware median at time of filing? (Form 122C-1 — 3-year commitment = under-median → may use proceeds after 36 months; 5-year commitment = over-median → must stay 60 months and modify plan).
+
+FAQ 21 (MEANS TEST) – STANDARD DEDUCTIONS
+See: https://www.justice.gov/ust/means-testing/
+
+FAQ 22 – FINDING THE MOST RECENT CHAPTER 13 PLAN
+Use Jubilee to locate the most recently filed plan.
+
+FAQ 23 – DEBT COLLECTION ATTEMPTS AFTER CASE FILED BUT BEFORE DISCHARGE
+Send a "stay" letter to the creditor. If wages are still being garnished after filing: fax stay letter to garnishing creditor's attorney AND to debtor's payroll company ASAP. If more than $600 was garnished within 90 days before filing: consider sending a preference letter instead (see Loom video). NOTE: Preference funds recovered come back to the attorney to pay fees. If client is on LMD plan, post-petition garnishments go back to client. If client paid in full prior to filing, they keep the preference funds.
+
+FAQ 24 – LENDER TERMINATED ONLINE ACCOUNT ACCESS
+A paralegal will assist with a conference call to the mortgage or auto lender. Authorization forms to restore online access are available on Dropbox.
+
+FAQ 25 – WHERE DOES CLIENT SEND MORTGAGE PAYMENT?
+Check the Proof of Claim filed by the lender — it typically lists the payment address. If client is facing an MFR (Motion for Relief from Automatic Stay): search Special Hearings Notes by client name (Ctrl+H) or search Jubilee to identify the lender.
+
+FAQ 26 – STOPPING A SHERIFF SALE (PRO SE / NEW CASTLE COUNTY)
+Steps: (1) Take pre-filing credit counseling at ccadvising.com. (2) Complete emergency Chapter 13 petition (Forms B101 and B104 — must list mortgage lender). (3) File at Bankruptcy Court: 824 Market St., 3rd Floor, Wilmington. Hours 8-4 M-F. Filing fee $313 (cash or certified funds). (4) Fax/email/deliver proof of filing to NCC Sheriff by Monday 3pm (sale is Tuesday 9am): ronald.fioravanti@newcastlede.gov, fax 302-395-8460. (5) Also deliver proof to foreclosure attorney. If filing to stay eviction (not sheriff sale): fax to JP Court and opposing counsel instead.
+
+FAQ 27 – CAN CLIENT REAFFIRM MORTGAGE?
+Generally NO in Delaware, unless mortgage company is substantially changing terms to benefit the debtor (lower interest rate, principal, or payment). Must occur prior to discharge. Delaware judges generally do not approve mortgage reaffirmations otherwise. See Yesware template "Reaffirming Mortgages."
+
+FAQ 28 – CLIENT SERVED WITH COURT SUMMONS OR TRIAL DATE
+IF BANKRUPTCY FILED: File Suggestion of Bankruptcy in appropriate Delaware court (JP, CCP, or Superior Court) with copy of BK filing notice. Also fax/email the creditor's attorney notice of the bankruptcy.
+IF BANKRUPTCY NOT YET FILED: We do not represent the client in other courts. Client must file a formal answer and obtain a trial date. We must be retained and fees paid in full at least 7 days before that date so we can file the bankruptcy in time to stay the proceeding. See Loom videos for JP Court and CCP responses. Superior Court forms at Delaware courts website.
+
+FAQ 29 – LENDER FILES FOR STAY RELIEF AND DEBTOR IS NEAR END OF CHAPTER 13
+Check case number for year filed (first two digits = year). Review Access13 to see if remaining months can fund mortgage arrears and legal fees. If not: MFR response must offer to cure arrears via Stipulation OR loan modification. Maximum Chapter 13 timeframe is 5 years (some Covid-era plans extended to 7 years).
+
+FAQ 30 – CLIENT ASKS WHY THEY OWE $375 FOR MORTGAGE LENDER RESPONSE
+The fee agreement does not cover motion representation, which is separate. The $375 covers hearings, stipulation negotiation, or response preparation if client disputes being behind. Payment arrangements accepted.
+
+FAQ 31 – CLIENT RECEIVES MORTGAGE LETTER BUT IS CURRENT ON PAYMENTS
+Likely a standard letter sent automatically when someone files Chapter 13 with a mortgage. Advise client to disregard and continue making payments.
+
+FAQ 32 – CLIENT MOVED OUT OF STATE BEFORE CASE WAS FILED
+See Dropbox audio recording for guidance.
+
+FAQ 33 – CREDITOR REQUIRES AUTHORIZATION TO SPEAK WITH FIRM
+Creditor is requesting a third-party authorization form. Search the creditor's website for their form, download, complete, and fax or email to the creditor.
+
+FAQ 34 – CAN CLIENT FILE ANOTHER BANKRUPTCY AFTER A PRIOR ONE?
+Chapter 7 after Chapter 7: must wait 8 years between filings to receive discharge. Chapter 13 after Chapter 7: may file even if Chapter 7 was within 8 years, BUT no Chapter 13 discharge if Chapter 7 was within 4 years. Chapter 13 after Chapter 13: no discharge if prior Chapter 13 discharge was within 2 years. DISMISSAL BARS: If prior case was dismissed within 180 days due to willful non-compliance or voluntary dismissal after a stay-relief motion, client may be barred from refiling.
+
+FAQ 35 – BANK TOOK MONEY VIA ACH AFTER BANKRUPTCY FILED
+Bank has a right of setoff pre-petition, but must petition the Court for stay relief to exercise setoff post-petition. The automatic stay prohibits post-petition setoff without court permission. Escalate to Ms. Carroll.
+
+FAQ 36 – CLIENT HAS ISSUES WITH TFS (TRUSTEE PAYMENT SYSTEM)
+Email TFS Support: support@tfsbillpay.com. Copy the client and link the Clio file. Use Yesware template "Email to TFS Support."
+
+FAQ 37 – TAX REFUNDS IN CHAPTER 13
+In general, client may keep their refund as long as they do not owe taxes. EXCEPTION: Under §553, the IRS may apply a refund toward pre-petition tax debt via setoff. Best practice: file bankruptcy before December 31 of the year the refund is expected. If refund was offset to another government agency: client calls BFS at 800-304-3107 (M-F 7:30am-5pm) to find out who they owe.
+
+FAQ 38 – IRS BILL FOR TAXES CLIENT THOUGHT WERE PAID IN CHAPTER 13
+Need: (a) Copy of confirmed plan and (b) IRS proof of claim. Compare what was in the plan vs. what IRS is billing. If tax returns for the years in question were filed less than 2 years before the bankruptcy filing date, those taxes are NOT discharged even if they were in the plan — client must pay the difference.
+
+FAQ 39 – HOW SHOULD CLIENT HANDLE CREDITOR CALLS?
+Tell creditors: "I have retained a bankruptcy lawyer. Her name is Cynthia Carroll. Call her at (302) 733-0411. Do not call me again." Then politely end the call.
+
+FAQ 40 – WHAT HAPPENS TO TAX LIENS AFTER BANKRUPTCY?
+STATE tax judgment liens are unsecured if the debtor does not own real estate. IRS tax judgments are secured by personal property (Schedule B assets). Escalate to Ms. Carroll for specific lien-avoidance strategy.
+
+FAQ 41 – MORTGAGE ON CREDIT REPORT AFTER BANKRUPTCY
+After bankruptcy discharge, the mortgage contract is discharged and will no longer appear on the credit report. However, the lender's security interest (lien) on the property remains.
+
+FAQ 42 – HOW LONG DOES CHAPTER 13 STAY ON CREDIT REPORT?
+Chapter 13 ending in DISCHARGE: 7 years from filing date. Chapter 13 ending in DISMISSAL: 10 years from dismissal date. Chapter 7: 10 years. Credit bureaus view Chapter 13 more favorably than Chapter 7.
+
+FAQ 43 – MUST CLIENT DISCLOSE ALL DEBTS?
+Yes. ALL debts must be disclosed — including mortgage, cars, and priority taxes. Client cannot choose to exclude any debt. Mortgages, car loans, and priority taxes will always be paid regardless.
+
+FAQ 44 – WILL MORTGAGE STAY OFF CREDIT REPORT PERMANENTLY?
+Yes, unless client refinances after the discharge.
+
+FAQ 45 – CAN CLIENT GET COMPLETE MORTGAGE PAYMENT HISTORY?
+Yes, via a Request for Information (RFI) sent to the mortgage company. Attorney can assist for an additional fee.
+
+FAQ 46 – REBUILDING CREDIT AFTER BANKRUPTCY
+Client can enroll in the 720 Credit Score Program. Submit via: https://720systemstrategies.zendesk.com/hc/en-us/requests/new. Eligible: Confirmed Ch. 13, discharged Ch. 7 and Ch. 13 clients. NOT eligible: LMD Ch. 7 clients until they complete their payment plan.
+
+FAQ 47 – DOES CLIENT HAVE TO MAKE SEPARATE MORTGAGE PAYMENT?
+Must read the specific plan. In 99.9% of Chapter 13 cases with a mortgage: client makes BOTH a separate Chapter 13 plan payment to the Trustee AND a direct payment to the mortgage company. EXCEPTION: Some plans include a matured mortgage loan balance paid entirely through the plan by the Trustee (no direct payments due). Always review the plan carefully and never guess.
+
+FAQ 48 – OPTIONS AFTER MORTGAGE LENDER RECEIVES STAY RELIEF IN CHAPTER 13
+Options: (1) Modify Chapter 13 plan to lower payments and pay taxes through plan. (2) Convert to Chapter 7 — discharges unsecured debt but does NOT save the home or address taxes in plan. (3) Allow dismissal and refile a new case (but client must afford mortgage + new plan payments, which is very difficult). (4) If no action taken: Trustee will file motion to dismiss — client loses bankruptcy protection. Advise client to decide and contact office promptly.
+
+FAQ 49 – CHAPTER 13 CASE DISMISSED — CAN IT BE REINSTATED?
+Yes, by filing a motion to vacate the dismissal. Fees: $375 for the motion (pay via LawPay before we proceed). Also need at least one full plan payment via money order/certified funds made out to the Trustee, sent by trackable mail (since TFS won't accept payment from a dismissed case). Client provides tracking number to the office.
+
+FAQ 50 – TFS CONTACT INFORMATION
+Email: support@tfsbillpay.zendesk.com. Phone: 888-PAY-CH13 (888-729-2413). Online chat: https://support.tfsbillpay.com/
+
+FAQ 51 – CLIENT SERVED WITH A LAWSUIT
+Client must file an Answer directly with the Court to get a trial date. Our fees must be paid in full at least 7 days before that trial date so we can file the bankruptcy and stay the proceeding.
+
+FAQ 52 – CAN CLIENT REFINANCE WHILE IN CHAPTER 13?
+Yes, but requires court approval. We file a motion with the bankruptcy court. We need a copy of the loan approval. Our fee is $750 (can be paid through a modified plan). Same applies to home equity loans or second mortgages.
+
+FAQ 53 – ARE TRAFFIC TICKETS DISCHARGEABLE?
+Only in Chapter 13, NOT in Chapter 7.
+
+FAQ 54 – HOW TO OBTAIN CERTIFIED COPY OF BANKRUPTCY COURT ORDER
+Contact: Cheryl Hollis, USBC, 302-252-2905, Cheryl_Hollis@deb.uscourts.gov. Needed for recording orders (e.g., motions to avoid lien, adversary proceedings to strip junior mortgage) with the Recorder of Deeds.
+
+FAQ 55 – TRUSTEE FILED MOTION TO DISMISS AND LENDER HAS STAY RELIEF
+Options for client: (1) Allow dismissal and refile — but must afford mortgage + new Chapter 13 plan payments. (2) Convert to Chapter 7: stop plan payments, get discharge in ~90 days, apply for loan modification (but won't prevent foreclosure if mod denied); fee $450 + 4 years tax returns + 6 months paystubs. (3) Modify current Chapter 13 plan to get discharge but won't save house without a loan mod. Advise Ms. Carroll to fill in specific payment figures before sending.
+
+FAQ 56 – HOW TO GET FEDERAL TAX RETURN TRANSCRIPT
+Call IRS automated phone service: 800-908-9946. Allow 5-10 calendar days for delivery by mail. Also available online at IRS.gov Get Transcript.
+
+FAQ 57 – HOW CAN CHAPTER 13 CLIENT LOWER PAYMENTS PERMANENTLY?
+(1) If secured/priority debt (taxes, mortgage arrears, cars, legal fees) is in the plan: little can be done unless there is a loan modification, reduced claim, or client surrenders secured property. (2) If plan includes a large unsecured distribution AND client's income has substantially dropped post-confirmation: provide 6 months paystubs to potentially reduce unsecured distribution. See Yesware template "Chapter 13 Client Request to Lower Payments."
+
+FAQ 58 – HOW CAN CHAPTER 13 CLIENT LOWER PAYMENTS TEMPORARILY?
+Through a 3-month moratorium (suspension or reduction) on plan payments. If client is financing a car through the plan, they must still pay at minimum the car portion during the moratorium (car claim balance ÷ months remaining). After moratorium: a modified plan is needed, which will likely increase monthly payment to make up for the missed payments. Refer to Bernadette for moratorium prep; to Kari for modified plan afterward. Max moratorium = 3 months.
+
+FAQ 59 – DIFFERENCE BETWEEN CHAPTER 7 AND CHAPTER 13
+See Yesware template with 2 videos and 2 handouts. Must consult current Median Income Table and know household size (table updates every 6 months). Cases filed after 11/1/2024: see DOJ website.
+
+FAQ 60 – ADDING CREDITORS AFTER CASE IS FILED
+Yes, as long as debt was incurred pre-petition. File Notice to Add Creditor + copy of 341 notice (served on creditor and Trustee only). Additional fees: $75 (pay via LawPay link before proceeding). After Chapter 7 discharge: must also file Motion to Reopen — additional fee $450. After no-asset Chapter 7 discharge: if creditor is general unsecured, debt is likely already discharged — send letter to creditor advising of discharge.
+
+FAQ 61 – WHEN CHAPTER 13 CASE FALLS APART
+Occurs when plan payments become unaffordable (too high, income loss, MFR requires plan increase). Options: Modified Step-up plan, moratorium, or conversion to Chapter 7. Calculate new estimated plan payment, then email AND text client to explain options. Conversion fee: $450 (if client qualifies — needs to pass means test). Need 3 years federal tax returns + 6 months paystubs. Email template in Yesware: "Options - When Ch 13 Case Falls Apart."
+
+FAQ 62 – DOES CLIENT HAVE TO ATTEND REAFFIRMATION HEARING ON A CAR?
+No. There will likely be no hearing — judge typically signs the order before court. As long as client is current and remains current on car payments, they may keep the car. If client later surrenders the car, they won't be liable for any deficiency.
+
+FAQ 63 – CAN UNSECURED DISTRIBUTION IN CHAPTER 13 BE LOWERED?
+(1) If based on income: need 6 months recent paystubs to verify substantial income reduction. (2) If based on home value: need appraisal showing lower home value AS OF the date the bankruptcy was filed (not current market value unless it was filed recently).
+
+FAQ 64 – APPROVAL TO PURCHASE A VEHICLE IN CHAPTER 13
+For confirmed Chapter 13 plans: max $350/month, max 60 months, max 18% interest. Must email Judy@ch13de.com to obtain Trustee's permission letter before purchase.
+
+FAQ 65 – EXEMPTIONS / PROTECTING ASSETS IN BANKRUPTCY (DELAWARE)
+Delaware exemptions: Real estate (personal residence): $200,000. Automobile: $25,000. Retirement funds: 100% exempt. Wildcard (other personal property): $25,000. The $25,000 wildcard must cover ALL personal property, not just one asset. NOTE: Federal exemptions apply if debtor has NOT lived in Delaware for at least 2 years.
+
+FAQ 66 – CHAPTER 13 CLIENT HARDSHIP / BREAK ON PAYMENTS
+Best option: 2-month moratorium. If financing a car through the plan: must pay at least the car portion to Trustee during moratorium (divide outstanding auto claim by remaining months). Modified plan required afterward — will increase current payment.
+
+FAQ 67 – CLIENT RECEIVES SUMMONS AFTER BANKRUPTCY FILED
+Fax or email notice of the bankruptcy filing + copy of the summons to the creditor's attorney. Use Yesware template "Email to Opposing Attorney-Post-Petition Summons."
+
+FAQ 68 – CAN STUDENT LOANS BE DISCHARGED?
+Generally NO, unless an Adversary Proceeding (mini-lawsuit) is filed against the student loan lender — which involves additional fees beyond normal bankruptcy services. We have partnered with Student Debt Solutions (evaluation fee $100): https://start.myresolvent.com/CynthiaCarrollLaw/. See Yesware template "Student Loans."
+
+FAQ 69 – PERMISSION TO OBTAIN A HOME LOAN IN CHAPTER 13
+Must petition the Court (Permission to Incur Additional Debt). Need: mortgage commitment (rate, monthly PITI, term, amount), contract of sale if under contract, realtor/mortgage contact info, preliminary settlement sheet, recent paystubs compared to Schedule I. Bottom line: can the debtor afford this without causing financial harm? If yes, we must prove it.
+
+FAQ 70 – PURCHASING A HOME AFTER BANKRUPTCY DISCHARGE
+If credit score is high enough, client may purchase within 2 years of discharge. Enroll in 720 Credit Score Program if not already enrolled. See Loom video for instructions.
+
+FAQ 71 – WHY HAS MORTGAGE PAYMENT INCREASED?
+If fixed-rate mortgage: likely because property taxes and/or insurance increased. Client may contact mortgage servicer about paying escrow shortage in full to avoid payment increase.
+
+FAQ 72 – WHY WAS MORTGAGE LOAN TRANSFERRED?
+Mortgages are transferred routinely — mortgage companies often prefer selling loans over holding them. This does NOT affect the client's rights — the new servicer must honor original mortgage terms.
+
+FAQ 73 – DOES CLIENT NEED PERMISSION TO ACCEPT A NEW JOB?
+No.
+
+FAQ 74 – CAN POST-PETITION DEBT BE ADDED TO CHAPTER 13 CASE OR PLAN?
+No. EXCEPTION: When a case converts from Chapter 13 to Chapter 7, post-petition debt may be added to the converted Chapter 7 case using the Schedule of Post-Petition Debt form (Dropbox).
+
+FAQ 75 – EMERGENCY CREDIT CARD USE BEFORE BANKRUPTCY
+Emergency expenses to protect health or property (e.g., replacing a water heater) are NOT considered fraudulent, even if bankruptcy is pending. Client should save documentation: photos of damage, receipts, invoices, insurance reports, proof of payment. This is an exception to the presumption of fraud for pre-bankruptcy credit card use.
+
+FAQ 76 – TAKING RETIREMENT FUNDS TO PURCHASE A CAR BEFORE FILING
+Yes, this is acceptable if it satisfies an emergency need. Advise client to speak with a tax professional about tax implications of the early withdrawal.
+
+FAQ 78 – CLIENT CANNOT FIND FEDERAL TAX RETURNS
+Call IRS at 800-908-9946 to order tax return transcripts by mail. Allow 5-10 business days. Specify which tax years are needed.
+
+FAQ 79 – MORTGAGE PAYMENTS IN SUSPENSE / NOT BEING APPLIED CORRECTLY
+Lenders place payments in suspense when: (1) payment is LESS than full amount due (held until full payment accumulates), or (2) payment is MORE than full amount (excess held in suspense). Advise client to verify their monthly payment matches the current amount on the most recent Notice of Mortgage Payment Change.
+
+FAQ 80 – PERMISSION TO INCUR NEW DEBT IN CHAPTER 13
+Generally NOT permitted without court approval. Auto loans: max $350/month, 60 months, 18% interest — email Judy@ch13de.com. Home purchase: need pre-approval with rate, term, monthly PITI, loan amount. Not permitted for: rebuilding credit, personal loans, credit cards, non-essential purchases. Timing: requests are unlikely to be approved early in a case.
+
+FAQ 81 – TOTALED CAR IN CHAPTER 13 (QUICK FACTS)
+Insurance money goes to the Trustee OR directly to the lender — applied to remaining plan balance. Vehicle exemptions do NOT apply to insurance proceeds (only to equity in the car itself). Client only receives money if insurance pays MORE than the plan balance owed on the vehicle. Any excess can be used as a down payment on a replacement. If insurance isn't enough to replace the car, court approval for a new car loan is required.
+
+FAQ 82 – POST-PETITION NOTICE OF FORECLOSURE MEDIATION
+Email both the opposing/foreclosure attorney AND Jennifer Smolko (jennifer.smolko@delaware.gov) with notice of bankruptcy filing. See Yesware template "Foreclosure Mediation - Notice of Bankruptcy to Smolko & OC." Only include co-debtor stay language if there is a co-debtor. If client is in pending Chapter 7 and wants to keep home: encourage mediation attendance + consult a housing counselor; may need to convert to Chapter 13. If pre-petition: strongly encourage attending mediation to attempt loan modification. We do NOT accept clients who cannot afford both Chapter 13 plan AND mortgage payments.
+
+FAQ 83 – NON-CLIENT ASKING ABOUT CREDIT REPAIR
+We do NOT offer credit repair services. The only program we offer is the 720 Credit Score Program ($99). Payment link: https://secure.lawpay.com/pages/cynthia-l-carroll-pa/operating. Once payment is made, client emails the office and we enroll them.
+
+FAQ 84 – 401K HARDSHIP WITHDRAWAL
+A hardship withdrawal allows taking money from a 401(k) for immediate financial need — not repaid but subject to taxes and possible 10% early withdrawal penalty (if under age 59½). May help avoid bankruptcy in some cases. Client must provide proof of hardship. We charge $350 for an attorney hardship letter. NOTE: Retirement funds are usually fully protected in bankruptcy — once withdrawn, that protection is lost.
+
+FAQ 85 – DEED TRANSFER
+Fee: $425 total ($212.50 down, $212.50 upon execution). Need: full names of current and new owner, property address, driver's licenses of both parties. No transfer taxes if parties are related. Deed will be titled as joint tenants with right of survivorship. Contact: Renee at intake@cynthiacarrolllaw.com.
+
+FAQ 86 – STIPULATIONS / CONSENT ORDERS RESOLVING MOTIONS FOR STAY RELIEF
+See Loom video and SOPs in Dropbox. Sample emails in Yesware: "Stipulation/Consent Order Email to Obtain Permission" and "Stipulation/Consent Order Email to Obtain Permission-2X Max."
+
+FAQ 87 – AUTO LENDER TOOK PAYMENT AFTER CHAPTER 13 FILED
+Determine WHEN the payment was withdrawn. If BEFORE filing: client should immediately stop automatic payments by contacting lender and bank; may need to open new account. If AFTER filing: we will amend the Chapter 13 plan to reduce the creditor's claim by that amount (only if lender's proof of claim doesn't already reflect those payments). Collect from client: exact amount withdrawn, date, whether case was filed at that time, bank statement showing withdrawal.
+
+FAQ 88 – CAN CHAPTER 13 CLIENT ADD A NEW CAR TO THE PLAN?
+Post-petition debt cannot be added to the plan. However, if client wants a new vehicle, they may obtain one IF: (1) Trustee approves (must be current with plan payments), AND (2) Permission is obtained from Judy@ch13de.com. Client must continue paying plan payments PLUS the new car payment.
+
+FAQ 89 – HOW TO DETERMINE WHETHER CASE CONTAINS LIENS REQUIRING ACTION
+Responsible: Post-Petition Paralegal. Steps: (1) Confirm bankruptcy chapter in Jubilee. (2) Open client's Dropbox file and locate title search. (3) Verify whether judgment is actually a lien (must be filed with Superior Court to be a lien). (4) If no lien: note no action required and notify client. (5) If judgment lien in Chapter 7: prepare Motion to Reopen + Motion to Avoid Lien (samples in Dropbox). (6) If Chapter 13: more flexibility — check whether lien can be addressed through the plan; include lien-avoidance language if applicable. (7) Tax liens require different handling — escalate. Do NOT file any motion without confirming lien type via title search.
+`;
+
+const SYSTEM_PROMPT = `You are an internal staff assistant for Cynthia L. Carroll, P.A., a bankruptcy law firm in Delaware. Your job is to help paralegals and intake staff quickly find answers from the firm's internal FAQ document.
+
+RULES:
+1. Answer questions using ONLY the information in the FAQ document provided. Do not add legal opinions or outside knowledge.
+2. Be concise and direct. Staff are busy — give them the answer they need to act.
+3. If the FAQ covers the topic, give the answer clearly and mention which FAQ number(s) apply.
+4. If the situation involves a next step (like sending an email template, checking a system, or calling someone), tell them exactly what to do.
+5. If the FAQs do NOT cover the question, or if the situation is complex/unusual, say: "This situation is not fully covered by the FAQs. Please bring this to Ms. Carroll before proceeding."
+6. NEVER invent procedures, fees, statutes, or guidance not in the FAQs.
+7. Keep responses under 250 words unless the question truly requires more detail.
+8. You may reference Yesware templates, Dropbox links, or system names (Jubilee, Access13, Clio, TFS, LawPay) when the FAQ mentions them.
+9. If multiple FAQs are relevant, address all of them.
+
+Here is the complete FAQ content:
+${FAQ_CONTENT}`;
+
+let conversationHistory = [];
+let isLoading = false;
+
+function ask(question) {
+  document.getElementById('userInput').value = question;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('userInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = '';
+  addMessage('user', question);
+  conversationHistory.push({ role: 'user', content: question });
+
+  showTyping();
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  const apiKey = document.getElementById('apiKeyInput')?.value?.trim();
+  if (!apiKey) {
+    removeTyping();
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+    addMessage('bot', '⚠️ Please enter your Anthropic API key in the field above before sending a message.');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      removeTyping();
+      addMessage('bot', `⚠️ API error: ${data.error.message}`);
+    } else {
+      const reply = data.content?.[0]?.text || 'Sorry, I could not get a response. Please try again.';
+      conversationHistory.push({ role: 'assistant', content: reply });
+      removeTyping();
+      addMessage('bot', reply);
+    }
+  } catch (err) {
+    removeTyping();
+    addMessage('bot', 'There was an error connecting to the assistant. Please check your connection and try again.');
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function addMessage(role, text) {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = role === 'user' ? 'YOU' : 'CC';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  // Check if response says to escalate
+  const escalateKeywords = ['not fully covered', 'bring this to Ms. Carroll', 'escalate', 'consult Ms. Carroll'];
+  const needsEscalation = escalateKeywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
+
+  // Format text — convert **bold** and newlines
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+
+  if (needsEscalation) {
+    bubble.innerHTML = formatted + `<div class="escalate-note">⚠ Escalate to Ms. Carroll before taking action.</div>`;
+  } else {
+    bubble.innerHTML = formatted;
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function showTyping() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-indicator';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = 'CC';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+</script>
+</body>
+</html>
